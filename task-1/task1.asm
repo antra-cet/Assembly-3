@@ -1,8 +1,6 @@
-%include "../../io.mac"
-
 struc node
-    	val: resd 1
-   		next: resd 1
+    	val: resd 1 ;the information field
+   		next: resd 1 ;the next field
 endstruc
 
 section .text
@@ -25,35 +23,40 @@ sort:
     mov eax, [ebp + 8]   ;int n
     mov ebx, [ebp + 12]  ;struct node *node
 
-	xor edx, edx ;making edx on null
-	mov ecx, eax ;iterator
+	xor edx, edx ;making edx on null, using it to add the nodes
+	mov ecx, eax ;iterator for the given list
 	xor eax, eax ;the final node to return
 
-; Using edx to find the last node (n, n-1, .. , 1)
-; Adding the nodes in a inverse order, starting by adding the last node (n value)
-; edx(val :n)   (val:n-1) edx(val:n) ... (val:1) edx(val:2) ... (val:n)
+; Using edx to find the nodes in inverse order (n, n-1, .. , 1)
+; Adding the nodes, starting by adding the last node (n value),
+; then n-1 value and so on as shown :
+; edx(val:n)   (val:n-1) edx(val:n) ... (val:1) edx(val:2) ... (val:n)
 ; ^ eax 	    ^eax				      ^eax
 
+; edx serves as a next node remembering all the list
+; until himself, and adding the first node later with eax
+; eax always remembers the head
+
 add_nodes_inorder:
-	cmp ecx, 0
+	cmp ecx, 0 ;verifying if we added all the nodes
 	jle function_end
 
-	push edx ;keeping the old node
-	mov edx, ebx ;making edx the head
+	push edx ;keeping the old node (that at first is null)
+	mov edx, ebx ;making edx the head to search a certain node
 	jmp find_node ;finding the wanted node
 
 node_found:
 	mov eax, edx ;making the last found node the head
-	pop edx ;retrieving the last node
+	pop edx ;retrieving the next node
 	mov [eax + next], edx ;connecting the nodes
-	mov edx, eax
+	mov edx, eax ;changing edx to remember the last added node
 
 	sub ecx, 1
-	jmp add_nodes_inorder ;continuing the loop
+	jmp add_nodes_inorder ;continuing the loop of adding nodes
 
 find_node:
 	cmp [edx + val], ecx ;verifying if we found the node
-	je node_found
+	je node_found ;returning to the main loop if so
 
 	add edx, 8 ;if not found continuing to search
 	jmp find_node
