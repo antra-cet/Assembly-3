@@ -1,11 +1,10 @@
-%include "../../io.mac"
 section .text
 	global cmmmc
 	extern printf
 
 ;; int cmmmc(int a, int b)
 ;
-;; calculate least common multiple fow 2 numbers, a and b
+;; calculate least common multiple for 2 numbers, a and b
 cmmmc:
 	;enter
 	push ebp
@@ -19,22 +18,22 @@ cmmmc:
 	add ebx, dword [ebp + 12] ;int b
 
 ; Using the euclidian formula for calculating the
-; biggest common divisor, the using the formula 
+; biggest common divisor, then using the formula 
 ; cmmmc * cmmdc = a * b => cmmmc = (a*b)/cmmdc
 
 ; Using eax to remember a * b
 	xor eax, eax ; making it on 0
-	add eax, ecx ; remembering a value
+	add eax, ecx ; remembering the "a" value
 	xor edx, edx ; using edx as an intermediate
 	add edx, ebx ; so that ebx doesn't change
 	imul edx ; multiplicating with b (edx)
 
 ; Finding the biggest common divisor
 cmmmc_start:
-	cmp ecx, ebx ;comparing the two
+	cmp ecx, ebx ;comparing the two (a and b)
 	je end_cmmmc ;if equal we found the divisor
 	jg sub_ecx ;if one is bigger we subtract
-	jl sub_ebx ;from the other that value
+	jl sub_ebx ;from that the other value
 	
 ; subtracting the value of b from a
 sub_ecx:
@@ -48,7 +47,8 @@ sub_ebx:
 
 end_cmmmc:
 	; Calculating cmmmc after the formula (a*b)/cmmdc
-	; having the cmmdc in either ecx or edx
+	; having the cmmdc in either ecx or edx, having
+	; the answer now in eax
 	div ecx
 
 	;leave
