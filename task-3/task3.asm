@@ -1,5 +1,3 @@
-%include "../../io.mac"
-
 section .data
     delimiters db " ,.", 0 ;global variable for delimiters
 
@@ -7,68 +5,94 @@ global get_words
 global compare_func
 global sort
 
-section .text
-    extern printf
-    extern strlen
-    extern strcmp
-    extern qsort
-    extern strtok
+section .text ;added all the needed external libc functions
+    extern strlen ;strlen to get a strings length
+    extern strcmp ;strcmp to compare lexicographically two strings
+    extern qsort ;called the qsort to sort the words
+    extern strtok ;to get the words from the text
 
+;the compare function is called in the qsort
 compare_func:
     enter 0, 0
+
+    ; pushing all the registers because some of the functions
+    ; called change them
+    push ebx
+    push edx
+    push ecx
+    push edi
+    push esi
 
     ;; Reading the parameters
     mov ebx, [ebp + 8]   ;char *first_word
     mov edx, [ebp + 12]  ;char *second_word
 
-    mov ebx,  [ebx]
-    mov edx,  [edx]
+    ; because we read the registers as pointers, we want to work
+    ; with them as strings so we change their values
+    ; from pointing to a certain memory place to having
+    ; the value of the pointer
+    mov ebx, [ebx] ;changing the first word to become a string
+    mov edx, [edx] ;changing the second word to become a string
 
-    ; PRINTF32`FIRST: %s\n\x0`, ebx
-    ; PRINTF32`SECOND: %s\n\x0`, edx
+    ; strlen changes the edx register so we push it in order
+    ; to not loose the string
+    ; now, our stack has the second word on top
+    push edx
 
-    ; remembering the lengths of ebx in edx by calling the strlen function
-    ; PRINTF32`%s\n\x0`, ebx
+    ;remembering the length of ebx in eax by calling the strlen function
     push ebx
     call strlen
     add esp, 4
-    ; PRINTF32`%d\n\x0`, eax
-    mov ecx, eax
-    xor eax, eax
 
-    ;remembering the length of ecx in eax by calling the strlen function
-    ; PRINTF32`%s\n\x0`, edx
+    ; eax contains now the string length of the first word
+    ; we pop the second word and also push on the stack
+    ; the length of the first word
+    pop edx
+    push eax
+
+    ; as mentioned before, strlen changes the value of the edx register
+    ; so, by using the eax register we remember the value of the second
+    ; word and then push it on the stack
+    mov eax, edx
+    push eax
+
+    ; remembering the length of edx in eax by calling the strlen function
     push edx
     call strlen
     add esp, 4
-    ; PRINTF32`4\n\x0`
 
-    ; comparing after length
-    cmp eax, ecx
-    ; PRINTF32`5\n\x0`
-    je equal_strings ; if they are the same length compare lexicographically
-    ; PRINTF32`6\n\x0`
-    sub ecx, eax ;if not subtract one from another
-    ; PRINTF32`7\n\x0`
-    mov eax, ecx ;remembering the value in eax
-    ; PRINTF32`8\n\x0`
+    ; getting back the second word
+    pop edx
+
+    ; the stack also contained the length of the first word, so because eax
+    ; now contains the length of the second word, we remember the
+    ; first word's length in ecx
+    pop ecx
+
+    cmp eax, ecx ; comparing after length
+    je equal_strings ; if they are the same length compare lexicographically with strcmp
+    sub ecx, eax ;if not subtract one from another in the correct order
+    mov eax, ecx ;so eax contains the correct answer
     jmp end_comp_func ;and jump to terminate the function
-    ; PRINTF32`9\n\x0`
 
 equal_strings:
-    ; if equal compare lexicographically by using strcmp
+    ; if equal lengths compare lexicographically by using strcmp
     push edx
-    ; PRINTF32`10\n\x0`
     push ebx
-    ; PRINTF32`11\n\x0`
-    call strcmp ;remembering the retiurn value in eax
-    ; PRINTF32`12\n\x0`
+    call strcmp ;remembering the return value in eax
     add esp, 8
-    ; PRINTF32`13\n\x0`
 
 ;finished the function
 end_comp_func:
-    ; PRINTF32`14\n\x0`
+    ; because at the beginning we pushed all the registers
+    ; on the stack to not loose their
+    ; values, at the end we need to retrieve them
+    pop esi
+    pop edi
+    pop ecx
+    pop edx
+    pop ebx
+
     leave
     ret
 
@@ -91,9 +115,7 @@ sort:
     push ecx ;putting the number of words
     push ebx ;putting the words
     call qsort ;calling the function
-    PRINTF32`6\n\x0`
     add esp, 16
-    PRINTF32`7\n\x0`
 
     leave
     ret
@@ -135,7 +157,7 @@ words_loop:
     push 0 ;pushing the NULL element
     call strtok ;calling the function
     add esp, 8
-    jmp words_loop
+    jmp words_loop ;continuing the loop
 
 end_get_words:
     leave

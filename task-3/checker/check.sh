@@ -40,7 +40,7 @@ echo "=================== Task 3 ===================="
 
 total=0
 for i in 1 2 3 4 5 6; do
-    ./checker < "tests/in/1.in" #| xargs > "tests/out/${i}.out"
+    ./checker < "tests/in/${i}.in" | xargs > "tests/out/${i}.out"
     out=$(diff "tests/ref/${i}.ref" "tests/out/${i}.out" 2>&1)
 
     if [ -z "$out" ]; then
