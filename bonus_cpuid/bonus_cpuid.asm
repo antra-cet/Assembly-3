@@ -9,6 +9,19 @@ section .text
 cpu_manufact_id:
 	enter 	0, 0
 	
+	; pushing the registers
+	push ebx
+	push ecx
+	push edx
+
+	; Reading the variables
+	mov ebx, [ebp + 8] ;char *id_string
+	
+	; retrieving the variables
+	pop edx
+	pop ecx
+	pop ebx
+
 	leave
 	ret
 
@@ -19,7 +32,22 @@ cpu_manufact_id:
 ;  0 is written otherwise
 features:
 	enter 	0, 0
+
+	; pushing the registers
+	push ebx
+	push ecx
+	push edx
+
+	; Reading the variables
+	mov ebx, [ebp + 8] ;char *vmx
+	mov edx, [ebp + 12] ;char *rdrand
+	mov eax, [ebp + 16] ;char *avx
 	
+	; retrieving the variables
+	pop edx
+	pop ecx
+	pop ebx
+
 	leave
 	ret
 
@@ -29,6 +57,20 @@ features:
 ;  cpu, and stores them in the corresponding parameters
 l2_cache_info:
 	enter 	0, 0
+
+	; pushing the registers
+	push ebx
+	push ecx
+	push edx
+
+	; Reading the variables
+	mov ebx, [ebp + 8] ;int *line_size
+	mov edx, [ebp + 12] ;int *cache_size
+	
+	; retrieving the variables
+	pop edx
+	pop ecx
+	pop ebx
 	
 	leave
 	ret
